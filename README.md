@@ -10,7 +10,7 @@ AWS Certificate Manager (ACM) and Amazon Route 53 are configured to provide secu
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 <img width="1536" height="1024" alt="architecture-diagram" src="https://github.com/user-attachments/assets/6a0a018c-7714-447a-a35c-69c3443047d6" />
 
@@ -119,118 +119,68 @@ systemctl enable apache2
 systemctl start apache2
 echo "Server: $(hostname)" > /var/www/html/index.html
 
-##  Target Group
+Target Group
 
-A Target Group named `web-tg` was created to register and manage the EC2 instances.
+Created a Target Group:
 
-* Target Type: Instances
-* Target Group Name: `web-tg`
-* VPC: `prod-vpc`
-* Healthy Threshold: 2
-* Unhealthy Threshold: 3
-* Health Check Interval: 30 seconds
+Name: web-tg
 
----
+Configuration:
 
-##  Application Load Balancer
+Target Type: Instances
+VPC: prod-vpc
+Healthy Threshold: 2
+Unhealthy Threshold: 3
+Health Check Interval: 30 seconds
+📈 Auto Scaling Group
 
-An internet-facing Application Load Balancer named `web-ALB` was created across three Availability Zones.
+Created an Auto Scaling Group:
 
-* Type: Application Load Balancer
-* Name: `web-ALB`
-* Scheme: Internet-facing
-* VPC: `prod-vpc`
-* Security Group: ALB Security Group
-* Target Group: `web-tg`
+Name: web-asg
 
-### Availability Zones
+Configuration:
 
-* `ap-south-1a` → `public-1-ap-south-1a`
-* `ap-south-1b` → `public-2-ap-south-1b`
-* `ap-south-1c` → `public-3-ap-south-1c`
+Launch Template: web-template
+Desired Capacity: 3
+Minimum Capacity: 1
+Maximum Capacity: 7
+Availability Zones: ap-south-1a, ap-south-1b, ap-south-1c
+Target Group: web-tg
 
----
+The Auto Scaling Group automatically launched three EC2 instances.
 
-##  Auto Scaling Group
+🔒 HTTPS Configuration
 
-An Auto Scaling Group named `web-asg` was created using the `web-template`.
+Requested a public SSL/TLS certificate using AWS Certificate Manager.
 
-| Configuration      | Value          |
-| ------------------ | -------------- |
-| Auto Scaling Group | `web-asg`      |
-| Launch Template    | `web-template` |
-| Desired Capacity   | 3              |
-| Minimum Capacity   | 1              |
-| Maximum Capacity   | 7              |
+Certificate: *.poojadaingade.shop
+DNS validation was configured using Route 53.
+The certificate was successfully issued.
+An HTTPS listener was added to the Application Load Balancer.
+The ACM certificate was attached to the HTTPS listener.
+🌍 Route 53 Configuration
 
-The Auto Scaling Group uses the three private subnets across the Availability Zones.
+Configured an A record in the Route 53 hosted zone:
 
-Three EC2 instances were automatically launched by the Auto Scaling Group.
+Hosted Zone: poojadaingade.shop
+Record Name: api
+Record Type: A
+Alias: Enabled
+Endpoint: Application and Classic Load Balancer
+Region: Asia Pacific (Mumbai)
+Target: web-ALB
 
----
+The configuration routes:
 
-##  HTTPS Configuration
+api.poojadaingade.shop → Application Load Balancer
+🧪 Testing
 
-A public SSL/TLS certificate was requested using AWS Certificate Manager (ACM).
+The infrastructure was tested by accessing the Application Load Balancer DNS.
 
-* Domain: `*.poojadaingade.shop`
+After refreshing the page, different EC2 server hostnames were displayed, verifying that traffic was being distributed across the EC2 instances.
 
-DNS validation was performed using a CNAME record in Route 53.
+The custom domain was also accessed successfully:
 
-An HTTPS listener was then configured on the Application Load Balancer using the ACM certificate.
-
----
-
-##  Route 53
-
-A Route 53 A-record Alias was configured to route the custom domain to the Application Load Balancer.
-
-* Record Name: `api`
-* Record Type: A
-* Alias: On
-* Region: Asia Pacific (Mumbai)
-* Target: `web-ALB`
-
-The configured domain was:
-
-`api.poojadaingade.shop`
-
----
-
-##  Testing & Verification
-
-The Application Load Balancer DNS was accessed to verify the web server.
-
-On refreshing the page, different EC2 server hostnames were displayed, verifying that traffic was being distributed across the EC2 instances.
-
-The custom domain was also accessed successfully and the server response was verified.
-
----
-
-##  Key Features
-
-* Multi-AZ AWS infrastructure
-* Custom VPC with public and private subnets
-* Internet Gateway and NAT Gateways
-* EC2 Apache web servers
-* Launch Template
-* Application Load Balancer
-* Target Group with health checks
-* Auto Scaling Group
-* HTTPS using AWS Certificate Manager
-* Custom domain routing using Route 53
-* Traffic distribution across EC2 instances
-
----
-
-##  Project Documentation
-
-Detailed implementation steps and screenshots are available in:
-
-**Production-Ready-Web-Infrastructure-using-AWS.pdf**
-
----
-
-##  Author
+api.poojadaingade.shop
 
 **Pooja Daingade**
