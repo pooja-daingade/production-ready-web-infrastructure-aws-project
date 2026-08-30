@@ -278,12 +278,6 @@ api.poojadaingade.shop
 * DNS routing using Route 53
 * Load distribution across multiple EC2 instances
 
----
-
-```
-
----
-
 ##  Author
 
 **Pooja Daingade**
